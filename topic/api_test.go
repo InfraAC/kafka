@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	"gogs.sharkgulf.cn/sg/bs/qkafka/client"
-	"gogs.sharkgulf.cn/sg/bs/qkafka/leader"
+	"github.com/sharkgulf/kafka/client"
+	"github.com/sharkgulf/kafka/leader"
 )
 
 func TestCreate(t *testing.T) {
