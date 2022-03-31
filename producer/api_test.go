@@ -1,13 +1,11 @@
 package producer
 
 import (
-	"context"
 	"fmt"
-	"log"
+	"sync"
 	"testing"
-	"time"
 
-	"github.com/segmentio/kafka-go"
+	"github.com/sharkgulf/kafka/topic/foobar"
 )
 
 // 检查kafka.Writer是否tcp链接复用
@@ -15,21 +13,39 @@ import (
 func TestP(t *testing.T) {
 	for i := 0; i < 100000; i++ {
 		// to produce messages
-		topic := "foobar"
-		// make a writer that produces to topic-A, using the least-bytes distribution
-		w := &kafka.Writer{
-			Addr:     kafka.TCP("127.0.0.1:9092"),
-			Balancer: &kafka.Hash{}, //相同key分配到同一分区
-			// Balancer: &kafka.LeastBytes{}, //数据分配到"接收数据量最小"的分区
-			Topic:        topic,
-			BatchTimeout: 1 * time.Millisecond,
-		}
-		err := w.WriteMessages(context.Background(), kafka.Message{
-			Key:   []byte("1"),
-			Value: []byte(fmt.Sprintf("%d", i)),
-		})
+		topic := foobar.Topic
+		value := []byte(fmt.Sprintf("%d", i))
+		write := New(Option{"127.0.0.1:9092"})
+		err := write.Write(topic, value)
 		if err != nil {
-			log.Fatal("failed to write messages:", err)
+			fmt.Println(err)
+			return
 		}
+		fmt.Printf("producer topic(%s) k(%v) v(%s)\n", topic, nil, value)
 	}
+}
+
+//测试写多分区
+func TestWriteMultiplePartition(t *testing.T) {
+	var goroutine int = 3
+	var wg sync.WaitGroup
+	wg.Add(goroutine)
+	for i := 0; i < goroutine; i++ {
+		go func() {
+			defer wg.Done()
+			for i := 0; i < 100; i++ {
+				// to produce messages
+				topic := foobar.Topic
+				value := []byte(fmt.Sprintf("%d", i))
+				write := New(Option{"127.0.0.1:9092"})
+				err := write.Write(topic, value)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				fmt.Printf("producer topic(%s) k(%v) v(%s)\n", topic, nil, value)
+			}
+		}()
+	}
+	wg.Wait()
 }

@@ -14,8 +14,6 @@ type class struct {
 	Option
 }
 
-var this *class
-
 type Class interface {
 	Create(topic string, partitions, replicationFactor int) error
 	Query(topic string) interface{}

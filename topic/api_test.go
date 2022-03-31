@@ -9,37 +9,38 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"github.com/sharkgulf/kafka/client"
-	"github.com/sharkgulf/kafka/leader"
+	"github.com/sharkgulf/kafka/controller"
+	"github.com/sharkgulf/kafka/topic/foobar"
 )
 
 func TestCreate(t *testing.T) {
-	leader := leader.Conn("127.0.0.1:9092")
-	defer leader.Close()
-	entry := New(Option{Conn: leader})
-	topic := "foobar"
-	err := entry.Create(topic, 1, 1)
+	controller := controller.Conn("127.0.0.1:9092")
+	defer controller.Close()
+	entry := New(Option{Conn: controller})
+	topic := foobar.Partitions
+	err := entry.Create(foobar.Topic, foobar.Partitions, foobar.ReplicationFactor)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("Topic(%s) create success\n", topic)
+	fmt.Printf("Topic(%v) create success\n", topic)
 }
 
 func TestQueryList(t *testing.T) {
-	leader := leader.Conn("127.0.0.1:9092")
-	defer leader.Close()
-	entry := New(Option{Conn: leader})
+	controller := controller.Conn("127.0.0.1:9092")
+	defer controller.Close()
+	entry := New(Option{Conn: controller})
 	m := entry.QueryList()
 	for k := range m {
 		fmt.Println(k)
 	}
 }
 
-func TestQuery(t *testing.T) {
-	leader := leader.Conn("127.0.0.1:9092")
-	defer leader.Close()
-	entry := New(Option{Conn: leader})
-	topic := "foobar"
+func TestQueryInfo(t *testing.T) {
+	controller := controller.Conn("127.0.0.1:9092")
+	defer controller.Close()
+	entry := New(Option{Conn: controller})
+	topic := foobar.Topic
 	r := entry.Query(topic)
 	if r == nil {
 		fmt.Printf("Topic(%s) not exist\n", topic)
@@ -49,12 +50,10 @@ func TestQuery(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	leader := leader.Conn("127.0.0.1:9092")
-	defer leader.Close()
-	entry := New(Option{Conn: leader})
-	topics := []string{
-		"foobar",
-	}
+	controller := controller.Conn("127.0.0.1:9092")
+	defer controller.Close()
+	entry := New(Option{Conn: controller})
+	topics := []string{foobar.Topic}
 	for _, v := range topics {
 		err := entry.Delete(v)
 		if err != nil {
@@ -67,11 +66,6 @@ func TestDelete(t *testing.T) {
 
 //低级api
 func TestLowApiTopicCreate(t *testing.T) {
-	const (
-		topic1 = "client-topic-1"
-		topic2 = "client-topic-2"
-		topic3 = "client-topic-3"
-	)
 	config := []kafka.ConfigEntry{{
 		ConfigName:  "retention.ms",
 		ConfigValue: "3600000",
@@ -91,37 +85,23 @@ func TestLowApiTopicCreate(t *testing.T) {
 	res, err := client.CreateTopics(context.Background(), &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{
 			{
-				Topic:             topic1,
-				NumPartitions:     -1,
-				ReplicationFactor: -1,
-				ReplicaAssignments: []kafka.ReplicaAssignment{
-					{
-						Partition: 0,
-						Replicas:  []int{1},
-					},
-					{
-						Partition: 1,
-						Replicas:  []int{1},
-					},
-					{
-						Partition: 2,
-						Replicas:  []int{1},
-					},
-				},
-				ConfigEntries: config,
-			},
-			{
-				Topic:             topic2,
-				NumPartitions:     2,
-				ReplicationFactor: 1,
+				Topic:             foobar.Topic,
+				NumPartitions:     foobar.Partitions,
+				ReplicationFactor: foobar.ReplicationFactor,
 				ConfigEntries:     config,
 			},
-			{
-				Topic:             topic3,
-				NumPartitions:     1,
-				ReplicationFactor: 1,
-				ConfigEntries:     config,
-			},
+			// {
+			// 	Topic:             topic2,
+			// 	NumPartitions:     2,
+			// 	ReplicationFactor: 1,
+			// 	ConfigEntries:     config,
+			// },
+			// {
+			// 	Topic:             topic3,
+			// 	NumPartitions:     1,
+			// 	ReplicationFactor: 1,
+			// 	ConfigEntries:     config,
+			// },
 		},
 	})
 	if err != nil {

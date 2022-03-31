@@ -1,4 +1,4 @@
-package leader
+package controller
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type Leader struct {
+type Controller struct {
 	conn *kafka.Conn
 	once sync.Once
 }
 
-var this = &Leader{}
+var this = &Controller{}
 
 func Conn(addr string) *kafka.Conn {
 	this.once.Do(func() {
@@ -27,13 +27,13 @@ func Conn(addr string) *kafka.Conn {
 		if err != nil {
 			panic(err.Error())
 		}
-		var leader *kafka.Conn
-		fmt.Printf("Leader=%s\n", controller.Host)
-		leader, err = kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+		var controllerConn *kafka.Conn
+		fmt.Printf("controller=%#+v\n", controller)
+		controllerConn, err = kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
 		if err != nil {
 			panic(err.Error())
 		}
-		this.conn = leader
+		this.conn = controllerConn
 	})
 	return this.conn
 }
