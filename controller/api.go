@@ -1,5 +1,6 @@
 package controller
 
+//controller is master broker
 import (
 	"fmt"
 	"net"
