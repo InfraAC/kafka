@@ -12,7 +12,12 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"github.com/sharkgulf/kafka/client"
-	"github.com/sharkgulf/kafka/topic/foobar"
+)
+
+var (
+	Topic             string = "footbar"
+	Partitions        int    = 3
+	ReplicationFactor int    = 1
 )
 
 // 检查kafka.Writer是否tcp链接复用
@@ -20,7 +25,7 @@ import (
 func TestP(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		// to produce messages
-		topic := foobar.Topic
+		topic := Topic
 		value := []byte(fmt.Sprintf("%d", i))
 		shutdown, err := Write("127.0.0.1:9092", topic, value)
 		if err != nil {
@@ -56,7 +61,7 @@ func TestWriteMultiplePartition(t *testing.T) {
 		go func(n int) {
 			for i := 0; i < 100; i++ {
 				// to produce messages
-				topic := foobar.Topic
+				topic := Topic
 				value := []byte(fmt.Sprintf("%016x", rand.Int63()))
 				_, err := Write("127.0.0.1:9092", topic, value)
 				if err != nil {
@@ -80,7 +85,7 @@ func TestWriteByKey(t *testing.T) {
 		go func(n int) {
 			for i := 0; i < 100; i++ {
 				// to produce messages
-				topic := foobar.Topic
+				topic := Topic
 				// key := []byte(fmt.Sprintf("%016x", rand.Int63()))
 				key := []byte(fmt.Sprintf("%d", i))
 				value := []byte(fmt.Sprintf("%016x", rand.Int63()))
@@ -113,7 +118,7 @@ func TestLowApiWrite(t *testing.T) {
 	}
 	now := time.Now()
 	res, err := client.Produce(context.Background(), &kafka.ProduceRequest{
-		Topic:        foobar.Topic,
+		Topic:        Topic,
 		Partition:    0,
 		RequiredAcks: -1,
 		Records: kafka.NewRecordReader(
@@ -140,7 +145,7 @@ func TestApiWrite(t *testing.T) {
 	// make a writer that produces to topic-A, using the least-bytes distribution
 	w := &kafka.Writer{
 		Addr:     kafka.TCP("127.0.0.1:9092"),
-		Topic:    foobar.Topic,
+		Topic:    Topic,
 		Balancer: &kafka.RoundRobin{},
 	}
 

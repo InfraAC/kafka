@@ -8,12 +8,17 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	"github.com/sharkgulf/kafka/topic/foobar"
+)
+
+var (
+	Topic             string = "footbar"
+	Partitions        int    = 3
+	ReplicationFactor int    = 1
 )
 
 func TestCG(t *testing.T) {
 	// make a new reader that consumes from topic-A
-	topic := foobar.Topic
+	topic := Topic
 	group := fmt.Sprintf("consumer-group-%s", topic)
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  []string{"127.0.0.1:9092"},
@@ -41,7 +46,7 @@ func TestCG(t *testing.T) {
 
 func TestRead(t *testing.T) {
 	addr := "127.0.0.1:9092"
-	topic := foobar.Topic
+	topic := Topic
 	group := fmt.Sprintf("consumer-group-%s", topic)
 	entry := New(Option{
 		Addr:  addr,

@@ -10,20 +10,24 @@ import (
 	"github.com/segmentio/kafka-go"
 	"github.com/sharkgulf/kafka/client"
 	"github.com/sharkgulf/kafka/controller"
-	"github.com/sharkgulf/kafka/topic/foobar"
+)
+
+var (
+	Topic             string = "footbar"
+	Partitions        int    = 3
+	ReplicationFactor int    = 1
 )
 
 func TestCreate(t *testing.T) {
 	controller := controller.Conn("127.0.0.1:9092")
 	defer controller.Close()
 	entry := New(Option{Conn: controller})
-	topic := foobar.Partitions
-	err := entry.Create(foobar.Topic, foobar.Partitions, foobar.ReplicationFactor)
+	err := entry.Create(Topic, Partitions, ReplicationFactor)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("Topic(%v) create success\n", topic)
+	fmt.Printf("Topic(%v) create success\n", Topic)
 }
 
 func TestQueryList(t *testing.T) {
@@ -40,7 +44,7 @@ func TestQueryInfo(t *testing.T) {
 	controller := controller.Conn("127.0.0.1:9092")
 	defer controller.Close()
 	entry := New(Option{Conn: controller})
-	topic := foobar.Topic
+	topic := Topic
 	r := entry.Query(topic)
 	if r == nil {
 		fmt.Printf("Topic(%s) not exist\n", topic)
@@ -53,7 +57,7 @@ func TestDelete(t *testing.T) {
 	controller := controller.Conn("127.0.0.1:9092")
 	defer controller.Close()
 	entry := New(Option{Conn: controller})
-	topics := []string{foobar.Topic}
+	topics := []string{Topic}
 	for _, v := range topics {
 		err := entry.Delete(v)
 		if err != nil {
@@ -85,9 +89,9 @@ func TestLowApiTopicCreate(t *testing.T) {
 	res, err := client.CreateTopics(context.Background(), &kafka.CreateTopicsRequest{
 		Topics: []kafka.TopicConfig{
 			{
-				Topic:             foobar.Topic,
-				NumPartitions:     foobar.Partitions,
-				ReplicationFactor: foobar.ReplicationFactor,
+				Topic:             Topic,
+				NumPartitions:     Partitions,
+				ReplicationFactor: ReplicationFactor,
 				ConfigEntries:     config,
 			},
 			// {

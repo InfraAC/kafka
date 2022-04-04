@@ -38,3 +38,7 @@ func Conn(addr string) *kafka.Conn {
 	})
 	return this.conn
 }
+
+func Close() {
+
+}
