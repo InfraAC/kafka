@@ -22,11 +22,12 @@ func TestP(t *testing.T) {
 		// to produce messages
 		topic := foobar.Topic
 		value := []byte(fmt.Sprintf("%d", i))
-		err := Write("127.0.0.1:9092", topic, value)
+		shutdown, err := Write("127.0.0.1:9092", topic, value)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		defer shutdown()
 		fmt.Printf("producer topic(%s) k(%v) v(%s)\n", topic, nil, value)
 	}
 }
@@ -57,7 +58,7 @@ func TestWriteMultiplePartition(t *testing.T) {
 				// to produce messages
 				topic := foobar.Topic
 				value := []byte(fmt.Sprintf("%016x", rand.Int63()))
-				err := Write("127.0.0.1:9092", topic, value)
+				_, err := Write("127.0.0.1:9092", topic, value)
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -77,12 +78,13 @@ func TestWriteByKey(t *testing.T) {
 	wg.Add(goroutine)
 	for n := 0; n < goroutine; n++ {
 		go func(n int) {
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 100; i++ {
 				// to produce messages
 				topic := foobar.Topic
-				key := []byte(fmt.Sprintf("%016x", rand.Int63()))
+				// key := []byte(fmt.Sprintf("%016x", rand.Int63()))
+				key := []byte(fmt.Sprintf("%d", i))
 				value := []byte(fmt.Sprintf("%016x", rand.Int63()))
-				err := WriteByKey("127.0.0.1:9092", topic, key, value)
+				_, err := WriteByKey("127.0.0.1:9092", topic, key, value)
 				if err != nil {
 					fmt.Println(err)
 					return
@@ -152,7 +154,6 @@ func TestApiWrite(t *testing.T) {
 		log.Fatal("failed to write messages:", err)
 	}
 
-	//2. message distribution same partition
 	for i := 0; i < 3; i++ {
 		err := w.WriteMessages(context.Background(),
 			kafka.Message{Value: []byte("Hello kafka")},

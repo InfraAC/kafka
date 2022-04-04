@@ -23,6 +23,7 @@ func TestCG(t *testing.T) {
 		MaxBytes: 10e6, // 10MB
 		// ReadBackoffMin:  1000 * time.Millisecond, //消费数据间隔
 		ReadLagInterval: 100 * time.Millisecond, //消费数据间隔
+		CommitInterval:  time.Second,            // flushes commits to Kafka every second
 	})
 
 	for {
@@ -36,4 +37,19 @@ func TestCG(t *testing.T) {
 	if err := r.Close(); err != nil {
 		log.Fatal("failed to close reader:", err)
 	}
+}
+
+func TestRead(t *testing.T) {
+	addr := "127.0.0.1:9092"
+	topic := foobar.Topic
+	group := fmt.Sprintf("consumer-group-%s", topic)
+	entry := New(Option{
+		Addr:  addr,
+		Group: group,
+		Topic: topic,
+	})
+	entry.OnMessage = OnMessage(func(message []byte) bool {
+		fmt.Printf("onMessage=%s", message)
+		return true
+	})
 }
