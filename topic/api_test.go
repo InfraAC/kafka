@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	"github.com/sharkgulf/kafka/client"
-	"github.com/sharkgulf/kafka/controller"
+	"github.com/infraac/kafka/client"
+	"github.com/infraac/kafka/controller"
 )
 
 var (

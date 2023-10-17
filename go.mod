@@ -1,4 +1,4 @@
-module github.com/sharkgulf/kafka
+module github.com/infraac/kafka
 
 go 1.14
 
